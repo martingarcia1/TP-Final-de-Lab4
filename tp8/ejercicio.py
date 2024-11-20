@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 orden_productos = ["Coca Cola", "Fanta", "Sprite", "7 Up", "Pepsi"]
 
 def mostrar_informacion_alumno():
+   with st.container(border=True):
     st.markdown("**Legajo:** 58.740")
     st.markdown("**Nombre:** García Sergio Martín")
     st.markdown("**Comisión:** C5")
@@ -28,16 +29,8 @@ def calcular_resumen(data):
     ).round(3)
 
     resumen["Ingreso_total"] = resumen["Precio Promedio"] * resumen["Unidades_vendidas"]
-    resumen["Margen Promedio"] = ((resumen["Ingreso_total"] - resumen["Costo_total"]) / resumen["Ingreso_total"]).round(3)
-
     resumen["Orden"] = resumen["Producto"].apply(lambda x: orden_productos.index(x) if x in orden_productos else len(orden_productos))
     resumen = resumen.sort_values(by="Orden").drop(columns=["Orden"])
-
-    for _, row in resumen.iterrows():
-        print(f"\n{row['Producto']}:")
-        print(f"Precio Promedio: ${row['Precio Promedio']}")
-        print(f"Margen Promedio: {row['Margen Promedio'] * 100:.2f}%")
-        print(f"Unidades Vendidas: {row['Unidades Vendidas']:,}")
 
     return resumen
 
@@ -49,16 +42,20 @@ rango_eje_y = {
     "7 Up": {"max_y": 16000, "step": 2000},
     "Pepsi": {"max_y": 25000, "step": 5000},
 }
-
+def calcular_delta(data):
+    data['Precio Delta'] = data['Ingreso_total'].pct_change() * 100
+    data['Unidades Delta'] = data['Unidades_vendidas'].pct_change() * 100
+    return data
 
 def crear_grafico_ventas(data, producto):
     ventas_mensuales = data.groupby(["Año", "Mes"])["Unidades_vendidas"].sum().reset_index()
-
+    
     fig, ax = plt.subplots(figsize=(10, 6))
     ax.plot(
         range(len(ventas_mensuales)),
+        
         ventas_mensuales["Unidades_vendidas"],
-        label=f"Ventas de {producto}",
+        label=f"{producto}",
         color="#1f77b4",
         linewidth=2
     )
@@ -74,8 +71,8 @@ def crear_grafico_ventas(data, producto):
     max_y_adjusted = (np.ceil(max_y / step_y) * step_y) if max_y > 0 else step_y
     ax.set_ylim(0, max_y_adjusted)
     ax.set_yticks(np.arange(0, max_y_adjusted + step_y, step_y))
-
-    ax.set_title(f"Evolución de Ventas Mensuales - {producto}")
+    
+    ax.set_title(f"Evolución de Ventas Mensuales - {producto}", fontsize=16)
     ax.set_xlabel("Año-Mes")
     ax.set_ylabel("Unidades Vendidas")
     ax.legend(loc="upper left")
@@ -107,15 +104,17 @@ else:
         for _, row in resumen.iterrows():
             producto = row["Producto"]
             producto_data = data[data["Producto"] == producto]
+            
+            producto_data = calcular_delta(producto_data)
 
-            with st.container():
+            with st.container(border=True):
                 col1, col2 = st.columns([0.4, 0.6])
 
                 with col1:
                     st.subheader(producto)
-                    st.metric("Precio Promedio", f"${row['Precio Promedio']:.3f}")
-                    st.metric("Margen Promedio", f"{row['Margen Promedio'] * 100:.2f}%")
-                    st.metric("Unidades Vendidas", f"{row['Unidades Vendidas']:,}")
+                    st.metric("Precio Promedio", f"${row['Precio Promedio']:.3f}",delta=f"{producto_data['Precio Delta'].iloc[-1]:.2f}%")
+                    st.metric("Margen Promedio", f"{row['Margen Promedio'] * 100:.2f}%",delta=f"{row['Margen Promedio']:.2f}%")
+                    st.metric("Unidades Vendidas", f"{row['Unidades Vendidas']:,}",delta=f"{producto_data['Unidades Delta'].iloc[-1]:.2f}%")
 
                 with col2:
                     fig = crear_grafico_ventas(producto_data, producto)
