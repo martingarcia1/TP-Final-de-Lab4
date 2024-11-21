@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 
 orden_productos = ["Coca Cola", "Fanta", "Sprite", "7 Up", "Pepsi"]
 
+## ATENCION: Debe colocar la direccion en la que ha sido publicada la aplicacion en la siguiente linea\
+# url = 'https://martingarcia1-tp-final-de-lab4-tp8ejercicio-r0gymh.streamlit.app/'
 def mostrar_informacion_alumno():
    with st.container(border=True):
     st.markdown("**Legajo:** 58.740")
