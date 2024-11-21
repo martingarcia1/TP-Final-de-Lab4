@@ -18,17 +18,17 @@ def calcular_resumen(data):
         "Costo_total": "sum"
     }).reset_index()
 
-    resumen["Precio Promedio"] = (resumen["Ingreso_total"] / resumen["Unidades_vendidas"]).round(3)
-    resumen["Margen Promedio"] = ((resumen["Ingreso_total"] - resumen["Costo_total"]) / resumen["Ingreso_total"]).round(3)
+    resumen["Precio Promedio"] = (resumen["Ingreso_total"] / resumen["Unidades_vendidas"]).round(2)
+    resumen["Margen Promedio"] = ((resumen["Ingreso_total"] - resumen["Costo_total"]) / resumen["Ingreso_total"]).round(2)
     resumen["Unidades Vendidas"] = resumen["Unidades_vendidas"]
 
     resumen["Precio Promedio"] = resumen.apply(
         lambda row: row["Precio Promedio"] * (1.05 if row["Precio Promedio"] < 1.5 else 
                                               0.95 if row["Precio Promedio"] > 3.0 else 1),
         axis=1
-    ).round(3)
+    ).round(2)
 
-    resumen["Ingreso_total"] = resumen["Precio Promedio"] * resumen["Unidades_vendidas"]
+    resumen["Ingreso_total"] = resumen["Precio Promedio"] * resumen["Unidades_vendidas"].round(2)
     resumen["Orden"] = resumen["Producto"].apply(lambda x: orden_productos.index(x) if x in orden_productos else len(orden_productos))
     resumen = resumen.sort_values(by="Orden").drop(columns=["Orden"])
 
@@ -43,8 +43,8 @@ rango_eje_y = {
     "Pepsi": {"max_y": 25000, "step": 5000},
 }
 def calcular_delta(data):
-    data['Precio Delta'] = data['Ingreso_total'].pct_change() * 100
-    data['Unidades Delta'] = data['Unidades_vendidas'].pct_change() * 100
+    data['Precio Delta'] = (data['Ingreso_total'].pct_change() * 100).round(2)
+    data['Unidades Delta'] = (data['Unidades_vendidas'].pct_change() * 100).round(2)
     return data
 
 def crear_grafico_ventas(data, producto):
@@ -112,7 +112,7 @@ else:
 
                 with col1:
                     st.subheader(producto)
-                    st.metric("Precio Promedio", f"${row['Precio Promedio']:.3f}",delta=f"{producto_data['Precio Delta'].iloc[-1]:.2f}%")
+                    st.metric("Precio Promedio", f"${row['Precio Promedio']:.2f}",delta=f"{producto_data['Precio Delta'].iloc[-1]:.2f}%")
                     st.metric("Margen Promedio", f"{row['Margen Promedio'] * 100:.2f}%",delta=f"{row['Margen Promedio']:.2f}%")
                     st.metric("Unidades Vendidas", f"{row['Unidades Vendidas']:,}",delta=f"{producto_data['Unidades Delta'].iloc[-1]:.2f}%")
 
