@@ -3,6 +3,8 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
+## ATENCION: Debe colocar la direccion en la que ha sido publicada la aplicacion en la siguiente linea\
+# url = 'https://martingarcia1-tp-final-de-lab4-tp8ejercicio-r0gymh.streamlit.app/'
 orden_productos = ["Coca Cola", "Fanta", "Sprite", "7 Up", "Pepsi"]
 
 def mostrar_informacion_alumno():
